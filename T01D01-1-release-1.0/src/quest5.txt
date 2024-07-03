@@ -1,0 +1,7 @@
+1. cd door_management_files
+2. cd door_configuration
+3. ls
+4. nano door_1.conf
+5. Must change "CLOSED" on "OPEN"
+6. cntr + o for saving changes
+7. cntr + x to exit
