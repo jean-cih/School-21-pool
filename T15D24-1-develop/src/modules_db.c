@@ -5,12 +5,15 @@
 #include "db_modules.h"
 #include "db_status_events.h"
 
+#include <string.h>
+
 int main(void) {
     int operation, table_n, amount;
     char x;
     while (1) {
         menu();
         if (scanf("%d%c", &operation, &x) == 2 && x == '\n' && operation > 0 && operation < 11) {
+            printf("\x1b[38;2;138;43;226m");
             if(operation == 10){
                 printf("You've left\n");
                 break;
@@ -28,42 +31,45 @@ int main(void) {
                 FILE *file;
                 if (operation == 1) {
                     printf("Insert the number of records: ");
+                    file = fopen(name_table, "r+");
                     if (scanf("%d%c", &amount, &x) == 2 && x == '\n') {
-                        file = fopen(name_table, "r+");
                         if (table_n == 1) {
                             int size1 = get_records_count_in_file_m(file);
-                            if (size1 > amount) size1 = amount;
+                            if (size1 < amount) amount = size1;
                             drawing(67);
                             printf("| %2s |%20s\t| %10s | %4s | %11s |\n", "Id", "Name of module", "Memory lvl", "Cell", "Delete flag");
                             drawing(67);
-                            for (int i = 0; i < size1; i++) {
+                            for (int i = 0; i < amount; i++) {
                                 MODULE read1 = select_m(file, i);
                                 printf("|%3d |%20s\t|%7d     |%4d  |%7d\t  |\n", read1.id, read1.name, read1.mem_n, read1.item_n,
                                        read1.flag_del);
                             }
+                            drawing(67);
                         } else if (table_n == 2) {
                             int size2 = get_records_count_in_file_l(file);
-                            if (size2 > amount) size2 = amount;
+                            if (size2 < amount) amount = size2;
                             drawing(59);
-                            printf("| %10s | %24s | %15s |\n", "memory lvl", "Quantity of cells on lvl", "Flag of defence");
+                            printf("| %10s | %24s | %15s |\n", "Memory lvl", "Quantity of cells on lvl", "Flag of defence");
                             drawing(59);
-                            for (int i = 0; i < size2; i++) {
+                            for (int i = 0; i < amount; i++) {
                                 LEVEL read2 = select_l(file, i);
                                 printf("|%6d      | %14d\t        |  %8d       |\n", read2.level_n, read2.item_q, read2.flag_def);
                             }
+                            drawing(59);
                         } else {
                             int size3 = get_records_count_in_file_s(file);
-                            if (size3 > amount) size3 = amount;
+                            if (size3 < amount) amount = size3;
                             drawing(103);
                             printf("| %10s | %11s | %20s | %23s | %23s |\n", "Event's id", "Module's id", "New status of module", "Data of changing status", "Time of changing status");
                             drawing(103);
-                            for (int i = 0; i < size3; i++) {
+                            for (int i = 0; i < amount; i++) {
                                 STATUS_EVENT read3 = select_s(file, i);
-                                printf("|%6d      |%7d      |%12d\t  |%18s\t    |%16s\t      |\n", read3.id_hap, read3.id_mod, read3.new_status,
+                                printf("|%6d      |%7d      |%12d\t  |%18s\t    |%17s\t      |\n", read3.id_hap, read3.id_mod, read3.new_status,
                                        read3.date_stat, read3.time_stat);
                             }
+                            drawing(103);
                         }
-
+                        printf("\x1b[38;2;0;255;255m");
                         fclose(file);
                     } else
                         printf("Incorrect input data:\n");
@@ -112,20 +118,18 @@ int main(void) {
                         printf("Incorrect input data:\n");
 
                 } else if (operation == 4) {
-                    printf("Input the number of string: \n");
+                    printf("Enter the line number from which the deletion will be made: ");
                     int id;
                     if (scanf("%d%c", &id, &x) == 2 && x == '\n') {
-                        FILE *file = fopen(name_table, "r+");
                         if (table_n == 1)
-                            delete_m(file, id, name_table);
+                            delete_m(id, name_table);
                         else if (table_n == 2)
-                            delete_l(file, id, name_table);
+                            delete_l(id, name_table);
                         else
-                            delete_s(file, id, name_table);
+                            delete_s(id, name_table);
 
-                        printf("Modules %d marked as deleted", id);
+                        printf("All modules from %d have been marked as deleted\n", id);
 
-                        fclose(file);
                     } else
                         printf("Incorrect input data:\n");
 
@@ -144,23 +148,25 @@ int main(void) {
                         printf("Active statuses is given only from modules table\n");
 
                 } else if (operation == 6) {
-                    if (table_n == 2) {
+                    if (table_n == 2)
                         printf("This table doesn't have any ids\n");
-                    } else {
+                    else {
                         printf("Please input the id of the deleting modules: \n");
-                        int id;
-                        if (scanf("%d%c", &id, &x) == 2 && x == '\n') {
-                            file = fopen(name_table, "r+");
-                            if (table_n == 1)
-                                delete_id_m(file, id, name_table);
-                            else
-                                delete_id_s(file, id, name_table);
-
-                            printf("Modules %d marked as deleted", id);
-                        } else
-                            printf("Incorrect input data:\n");
+                    int id;
+                    if (scanf("%d%c", &id, &x) == 2 && x == '\n') {
+                        file = fopen(name_table, "r+");
+   
+                        if (table_n == 1)
+                            delete_id_m(file, id, name_table);
+                        else
+                            delete_id_s(file, id, name_table);
 
                         fclose(file);
+       
+                        printf("Modules %d marked as deleted\n", id);
+                    } else
+                        printf("Incorrect input data:\n");
+
                     }
                 } else if (operation == 7) {
                     if (table_n != 1 && table_n != 3) {
@@ -225,6 +231,9 @@ int main(void) {
         } else
             printf("Incorrect number of operation:\n");
 
+
+        printf("\x1b[38;2;138;43;226m");
+        printf("Tap any buttom to go next\n");
         getchar();
     }
 }

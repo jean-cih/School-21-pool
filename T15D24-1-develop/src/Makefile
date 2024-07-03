@@ -1,6 +1,6 @@
 CC = gcc
 
-CFLAGS = -Wall -Werror -Wextra -std=c11
+CFLAGS = -Wall -Werror -Wextra
 
 all: build_db
 
